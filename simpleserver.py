@@ -37,12 +37,11 @@ except IndexError:
     pass
 
 if ipv6:
-    ip_list = [d for d in ip_list if isinstance(ip_address(d), IPv6Address)]
+    ip_list = [d for d in ip_list if isinstance(ip_address(d), IPv6Address) and not d in blacklist]
     server = TCPServer6
     logger.info("Use IPv6 address")
 else:
-    ip_list = [d for d in ip_list if isinstance(ip_address(d), IPv4Address) and
-            d is not in blacklist]
+    ip_list = [d for d in ip_list if isinstance(ip_address(d), IPv4Address) and not d in blacklist]
     server = TCPServer
     logger.info("Use IPv4 address")
 
