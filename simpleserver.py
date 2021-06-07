@@ -1,6 +1,8 @@
 from socketserver import TCPServer
 from http.server import SimpleHTTPRequestHandler
 
+import pandas as pd
+
 from socket import AF_INET6
 from ipaddress import ip_address
 from ipaddress import IPv6Address, IPv4Address
@@ -20,10 +22,11 @@ class TCPServer6(TCPServer):
 
 Handler = SimpleHTTPRequestHandler
 
-
 #Get and set IP config
 ip_list = subprocess.getoutput("hostname -I").split(" ")
 ip_list = [d for d in ip_list if d != ""]
+
+blacklist = pd.read_csv("./blacklist.csv", comment = "#").values.tolist()[0]
 
 port = 8000
 ipv6 = False
@@ -39,7 +42,7 @@ if ipv6:
     logger.info("Use IPv6 address")
 else:
     ip_list = [d for d in ip_list if isinstance(ip_address(d), IPv4Address) and
-            d != "192.168.0.10"]
+            d is not in blacklist]
     server = TCPServer
     logger.info("Use IPv4 address")
 
