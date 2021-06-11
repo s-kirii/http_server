@@ -26,7 +26,8 @@ Handler = SimpleHTTPRequestHandler
 ip_list = subprocess.getoutput("hostname -I").split(" ")
 ip_list = [d for d in ip_list if d != ""]
 
-blacklist = pd.read_csv("./blacklist.csv", comment = "#").values.tolist()[0]
+
+blacklist = pd.read_csv("./blacklist.csv", comment = "#").blacklist.values.tolist()
 
 port = 8000
 ipv6 = False
