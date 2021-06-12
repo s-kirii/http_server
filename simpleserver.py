@@ -55,9 +55,9 @@ addr = ip_list[0], port
 with server(addr, Handler) as httpd:
     try:
         if ipv6:
-            logger.info("server is listening at http://[%s]:%s"%(ip_list[0], port))
+            logger.info("server is listening at http://[%s]:%s"%(addr[0], addr[1]))
         else:
-            logger.info("server is listening at http://%s:%s"%(ip_list[0], port))
+            logger.info("server is listening at http://%s:%s"%(addr[0], addr[1]))
         httpd.serve_forever()
     except KeyboardInterrupt:
         del httpd
