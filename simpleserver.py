@@ -20,45 +20,76 @@ class TCPServer6(TCPServer):
     def __init__(self, addr, Handler):
         super().__init__(addr, Handler)
 
-Handler = SimpleHTTPRequestHandler
+class HTTPServersHandle():
+    def __init__(self, auto= True, ipv4=True, ipv6=False, port=8000):
+        self.blacklist = pd.read_csv("./blacklist.csv", comment = "#").blacklist.values.tolist()
+        self.port = port
+        self.auto = auto
+        self.ipv6 = ipv6
+        self.ipv4 = ipv4
+        self.Handler = SimpleHTTPRequestHandler
 
-#Get and set IP config
-ip_list = subprocess.getoutput("hostname -I").split(" ")
-ip_list = [d for d in ip_list if d != ""]
+        if self.auto:
+            if not ipv6 and not ipv4:
+                raise Exception("If you set auto mode you mast set True in ipv6 or ipv4")
+            ip_list = subprocess.getoutput("hostname -I").split(" ")
+            ip_list = [d for d in ip_list if d != ""]
+            if ipv6:
+                self.ip_list6 = [d for d in ip_list if isinstance(ip_address(d), IPv6Address) and not d in self.blacklist]
+                if len(self.ip_list6) == 0:
+                    raise Exception("Can't get any IPv6 address")
+                else:
+                    logger.info("Detect IPv6 address list %s".format(self.ip_list6))
 
+            if ipv4:
+                self.ip_list4 = [d for d in ip_list if isinstance(ip_address(d), IPv4Address) and not d in self.blacklist]
+                if len(self.ip_list4) == 0:
+                     raise Exception("Can't get any IPv6 address")
+                else:
+                    logger.info("Detect IPv4 address list %s".format(self.ip_list4))
 
-blacklist = pd.read_csv("./blacklist.csv", comment = "#").blacklist.values.tolist()
+    def start_server(self, ipv6 = False, addr=None):
+        if addr is None:
+            if self.auto:
+                if ipv6:
+                    if self.ipv6:
+                        addr = self.ip_list6[0], self.port
+                    else:
+                        raise Exception("Cant't set IPv6.")
+                else:
+                    if self.ipv4:
+                        addr = self.ip_list4[0], self.port
+                    else:
+                        raise Exception("Cant't set IPv4.")
+            else:
+                raise Exception("Must set addr.")
 
-port = 8000
-ipv6 = False
-try:
-    if sys.argv[1] == "ipv6":
-        ipv6 = True
-except IndexError:
-    pass
+        server = TCPServer6 if ipv6 else TCPServer
+        with server(addr, self.Handler) as httpd:
+            try:
+                if ipv6:
+                    logger.info("server is listening at http://[%s]:%s"%(addr[0], addr[1]))
+                else:
+                    logger.info("server is listening at http://%s:%s"%(addr[0], addr[1]))
+                httpd.serve_forever()
+            except KeyboardInterrupt:
+                del httpd
+                logger.info("stop server")
 
-if ipv6:
-    ip_list = [d for d in ip_list if isinstance(ip_address(d), IPv6Address) and not d in blacklist]
-    server = TCPServer6
-    logger.info("Use IPv6 address")
-else:
-    ip_list = [d for d in ip_list if isinstance(ip_address(d), IPv4Address) and not d in blacklist]
-    server = TCPServer
-    logger.info("Use IPv4 address")
+    def start_servers():
+        pass
 
-if len(ip_list) == 0:
-    raise Exception("Can't get any IP address")
-
-addr = ip_list[0], port
-
-#Start server
-with server(addr, Handler) as httpd:
+if __name__ == "__main__":
+    ipv6 = False
     try:
-        if ipv6:
-            logger.info("server is listening at http://[%s]:%s"%(addr[0], addr[1]))
-        else:
-            logger.info("server is listening at http://%s:%s"%(addr[0], addr[1]))
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        del httpd
-        logger.info("stop server")
+        if sys.argv[1] == "ipv6":
+            ipv6 = True
+    except IndexError:
+        pass
+
+    if ipv6:
+        sv_handle = HTTPServersHandle(ipv4=False, ipv6=True)
+        sv_handle.start_server(ipv6=True)
+    else:
+        sv_handle = HTTPServersHandle(ipv4=True, ipv6=False)
+        sv_handle.start_server()
