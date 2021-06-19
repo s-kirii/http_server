@@ -83,6 +83,8 @@ class HTTPServersHandle():
                 logger.info("stop server")
 
     def add_ip_addresses(self, ip):
+        if ip in self.ip_list4 or ip in self.ip_list6:
+            raise Exception("Already added")
         try:
             if isinstance(ip_address(ip), IPv6Address):
                 self.ip_list6.append(ip)
