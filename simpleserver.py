@@ -39,14 +39,14 @@ class HTTPServersHandle():
                 if len(self.ip_list6) == 0:
                     raise Exception("Can't get any IPv6 address")
                 else:
-                    logger.info("Detect IPv6 address list %s".format(self.ip_list6))
+                    logger.info("Detect IPv6 address list %s"%(self.ip_list6))
 
             if ipv4:
                 self.ip_list4 = [d for d in ip_list if isinstance(ip_address(d), IPv4Address) and not d in self.blacklist]
                 if len(self.ip_list4) == 0:
                      raise Exception("Can't get any IPv6 address")
                 else:
-                    logger.info("Detect IPv4 address list %s".format(self.ip_list4))
+                    logger.info("Detect IPv4 address list %s"%(self.ip_list4))
 
     def start_server(self, ipv6 = False, addr=None):
         if addr is None:
