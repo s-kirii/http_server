@@ -22,7 +22,10 @@ class TCPServer6(TCPServer):
 
 class HTTPServersHandle():
     def __init__(self, auto= True, ipv4=True, ipv6=False, port=8000):
-        self.blacklist = pd.read_csv("./blacklist.csv", comment = "#").blacklist.values.tolist()
+        try:
+            self.blacklist = pd.read_csv("./blacklist.csv", comment = "#").blacklist.values.tolist()
+        except pd.errors.EmptyDataError:
+            self.blacklist = []
         self.port = port
         self.auto = auto
         self.ipv6 = ipv6
