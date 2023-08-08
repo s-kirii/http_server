@@ -10,6 +10,8 @@ from ipaddress import IPv6Address, IPv4Address
 import subprocess
 import sys
 
+from ip_tracer import get_ip
+
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -38,7 +40,7 @@ class HTTPServersHandle():
         if self.auto:
             if not ipv6 and not ipv4:
                 raise Exception("If you set auto mode you mast set True in ipv6 or ipv4")
-            ip_list = subprocess.getoutput("hostname -I").split(" ")
+            ip_list = [get_ip()]
             ip_list = [d for d in ip_list if d != ""]
             if ipv6:
                 for d in ip_list:
